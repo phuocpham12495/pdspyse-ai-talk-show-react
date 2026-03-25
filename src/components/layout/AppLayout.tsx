@@ -14,6 +14,7 @@ import {
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
+import { useSettingsStore } from '../../stores/settingsStore';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -24,6 +25,10 @@ export default function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const isOnline = useOnlineStatus();
+  const isDark = useSettingsStore((s) => s.theme) === 'dark';
+
+  const bg = isDark ? undefined : '#fff';
+  const border = isDark ? undefined : '1px solid #f0f0f0';
 
   const menuItems = [
     { key: '/', icon: <HomeOutlined />, label: 'Tạo Talk Show' },
@@ -54,11 +59,11 @@ export default function AppLayout() {
         breakpoint="lg"
         collapsedWidth={0}
         trigger={null}
-        style={{ background: '#fff', borderRight: '1px solid #f0f0f0' }}
+        style={{ background: bg, borderRight: border }}
       >
         <div style={{ padding: '16px', textAlign: 'center' }}>
           <Title level={4} style={{ color: '#6C5CE7', margin: 0 }}>
-            {collapsed ? '🎙️' : '🎙️ Pdspyse'}
+            {collapsed ? '🎙️' : '🎙️ Pdspyse ATS'}
           </Title>
         </div>
         <Menu
@@ -71,7 +76,7 @@ export default function AppLayout() {
       </Sider>
 
       <Layout>
-        <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+        <Header style={{ background: bg, padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: border }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Button
               type="text"
@@ -97,7 +102,7 @@ export default function AppLayout() {
           </Dropdown>
         </Header>
 
-        <Content style={{ margin: 24, padding: 24, background: '#fff', borderRadius: 16, minHeight: 360 }}>
+        <Content style={{ margin: 24, padding: 24, background: bg, borderRadius: 16, minHeight: 360 }}>
           <Outlet />
         </Content>
       </Layout>

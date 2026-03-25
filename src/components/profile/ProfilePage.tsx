@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { profileService } from '../../services/profileService';
 import { notificationService } from '../../services/notificationService';
+import { useSettingsStore } from '../../stores/settingsStore';
 import type { User } from '../../types';
 
 const { Title, Text } = Typography;
@@ -16,6 +17,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const { user, logout } = useAuthStore();
+  const { setTheme, setLanguage } = useSettingsStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +54,8 @@ export default function ProfilePage() {
         },
       });
       setProfile(updated);
+      setTheme(values.theme);
+      setLanguage(values.language);
       message.success('Đã cập nhật hồ sơ!');
     } catch (err) {
       message.error((err as Error).message || 'Cập nhật thất bại');
