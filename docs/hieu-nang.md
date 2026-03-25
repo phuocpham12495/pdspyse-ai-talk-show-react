@@ -76,3 +76,24 @@ Zustand `episodeStore` hiện sử dụng `persist` middleware để lưu episod
 | Chiến lược | Stale-while-revalidate | Hiển thị cache, fetch mới khi online |
 
 > Lưu ý: localStorage có giới hạn ~5MB/domain. Nếu dữ liệu lớn cần xem xét IndexedDB.
+
+---
+
+## Cập nhật Giai đoạn 4 (2026-03-25)
+
+### Edge Function — Tăng maxOutputTokens
+
+| Thông số | Giai đoạn 3 | Giai đoạn 4 | Ghi chú |
+|----------|-------------|-------------|---------|
+| `maxOutputTokens` | 4096 | **8192** | Hỗ trợ talk show dài hơn, nội dung tiếng Việt đầy đủ hơn |
+| `verify_jwt` | `true` | **`false`** | Fix lỗi 401; version function 2→5 |
+| Ngôn ngữ output | Không ràng buộc | **Tiếng Việt 100%** | Prompt cập nhật: "ALL content MUST be written in Vietnamese language" |
+
+### Truy vấn Social — Join thật
+
+`getPublicEpisodes` nay join bảng `likes` và `comments` để lấy count thật thay vì đếm phía client. Loại bỏ lỗi do `.single()` khi không có kết quả (socialService.toggleLike, hasLiked chuyển sang array query).
+
+| Thay đổi | Tác động hiệu năng |
+|----------|-------------------|
+| Join likes/comments trong 1 query | Giảm số round-trips từ 3 xuống 1 |
+| Array query thay `.single()` | Loại bỏ exception overhead khi 0 rows |

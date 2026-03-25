@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Button, Spin, Tag, Space, Typography, Divider, message, Tooltip } from 'antd';
-import { ArrowLeftOutlined, HeartOutlined, HeartFilled, ShareAltOutlined } from '@ant-design/icons';
+import { Button, Spin, Tag, Space, Typography, Divider, message, Switch } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useEpisodeStore } from '../../stores/episodeStore';
-import { useFeedStore } from '../../stores/feedStore';
 import TalkShowOutput from '../generator/TalkShowOutput';
 import CommentSection from '../feed/CommentSection';
 
@@ -13,34 +12,13 @@ export default function EpisodeDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentEpisode, isLoading, fetchEpisodeById } = useEpisodeStore();
-  const { toggleLike } = useFeedStore();
-  const [liked, setLiked] = useState(false);
+  const { currentEpisode, isLoading, fetchEpisodeById, togglePublic } = useEpisodeStore();
 
   const isPublicView = location.pathname.startsWith('/feed/');
 
   useEffect(() => {
     if (id) fetchEpisodeById(id);
   }, [id, fetchEpisodeById]);
-
-  const handleLike = async () => {
-    if (!id) return;
-    try {
-      const isLiked = await toggleLike(id);
-      setLiked(isLiked);
-    } catch {
-      message.error('Không thể thực hiện');
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      message.success('Đã sao chép liên kết!');
-    } catch {
-      message.error('Không thể sao chép');
-    }
-  };
 
   if (isLoading || !currentEpisode) {
     return <div style={{ textAlign: 'center', padding: 48 }}><Spin size="large" /></div>;
@@ -68,28 +46,29 @@ export default function EpisodeDetail() {
         Tạo lúc: {new Date(currentEpisode.created_at).toLocaleString('vi-VN')}
       </Text>
 
-      {/* Social action buttons for public episodes */}
-      {(isPublicView || currentEpisode.is_public) && (
-        <Space style={{ marginBottom: 16 }}>
-          <Tooltip title={liked ? 'Bỏ thích' : 'Thích'}>
-            <Button
-              icon={liked ? <HeartFilled style={{ color: '#E17055' }} /> : <HeartOutlined />}
-              onClick={handleLike}
-            >
-              {liked ? 'Đã thích' : 'Thích'}
-            </Button>
-          </Tooltip>
-          <Tooltip title="Chia sẻ">
-            <Button icon={<ShareAltOutlined />} onClick={handleShare}>
-              Chia sẻ
-            </Button>
-          </Tooltip>
-        </Space>
+      {!isPublicView && (
+        <div style={{ marginBottom: 16 }}>
+          <Space>
+            <Text>Trạng thái:</Text>
+            <Switch
+              checked={currentEpisode.is_public}
+              checkedChildren="Công khai"
+              unCheckedChildren="Riêng tư"
+              onChange={async (checked) => {
+                try {
+                  await togglePublic(currentEpisode.id, checked);
+                  message.success(checked ? 'Đã chuyển sang công khai' : 'Đã chuyển sang riêng tư');
+                } catch {
+                  message.error('Không thể thay đổi trạng thái');
+                }
+              }}
+            />
+          </Space>
+        </div>
       )}
 
       <TalkShowOutput content={currentEpisode.generated_content} />
 
-      {/* Comments section for public episodes */}
       {(isPublicView || currentEpisode.is_public) && id && (
         <>
           <Divider />

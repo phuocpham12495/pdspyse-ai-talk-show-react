@@ -88,3 +88,20 @@ App
 | T+22 | Responsive: LoginForm, RegisterForm, GeneratorForm, FilterBar | Dùng `maxWidth` + `width: 100%` + `minWidth` thay vì fixed width |
 | T+23 | Kết nối notification Switch → notificationService | UI có Switch nhưng chưa gọi requestPermission() |
 | T+24 | Thêm Zustand persist middleware cho episodeStore | US015: xem episode offline cần lưu localStorage |
+
+## Giai đoạn 4: Sửa lỗi & Cải thiện tính năng [2026-03-25]
+
+| Thời gian | Hành động | Lý do quyết định |
+|-----------|-----------|-------------------|
+| T+25 | Xóa dark theme & ngôn ngữ tiếng Anh (settingsStore, darkTheme, enUS locale) | App chỉ hỗ trợ tiếng Việt, giao diện sáng duy nhất — đơn giản hóa |
+| T+26 | Edge Function: cập nhật prompt yêu cầu output hoàn toàn tiếng Việt, tăng maxOutputTokens 4096→8192 | Đảm bảo nội dung talk show luôn bằng tiếng Việt, tăng độ dài output |
+| T+27 | Edge Function: đổi verify_jwt từ true→false (fix lỗi 401), version 2→5 | JWT Supabase không tự đính kèm khi gọi từ frontend → 401 liên tục |
+| T+28 | Thêm togglePublic vào episodeService + episodeStore; EpisodeDetail có Switch Công khai/Riêng tư | User cần tự kiểm soát visibility của từng tập |
+| T+29 | Xóa like/share khỏi EpisodeDetail; chỉ giữ trong EpisodeCard trên feed | Tránh trùng lặp UI, social chỉ có ý nghĩa trên feed cộng đồng |
+| T+30 | getPublicEpisodes join bảng likes + comments để lấy số đếm thật; sửa socialService.toggleLike và hasLiked dùng array query thay .single() | .single() throw lỗi khi 0 kết quả; join cho count chính xác |
+| T+31 | Đổi RLS bảng users từ "chỉ profile của mình" → "đọc công khai" | Email người khác hiển thị "Ẩn danh" do không fetch được → sửa |
+| T+32 | Đăng ký không auto-login; hiển thị thông báo xác nhận email, redirect /login | Supabase yêu cầu xác nhận email trước → auto-login sẽ fail |
+| T+33 | getEpisodes lọc theo user_id để "Tập của tôi" chỉ hiện tập của chủ sở hữu | RLS chưa đủ — query cần filter rõ ràng để tránh lộ dữ liệu |
+| T+34 | PersonaBuilder hỗ trợ cả create + edit (route /personas/:id/edit); PersonaList có nút Edit/Delete cho custom personas | Cho phép sửa persona tùy chỉnh; default personas vẫn read-only |
+| T+35 | Sửa lưu tag: đổi từ upsert → select-first-then-insert | Upsert thất bại im lặng do RLS; pattern mới kiểm tra trước khi insert |
+| T+36 | Xóa .env khỏi git (filter-branch), thêm vào .gitignore | Tránh lộ Supabase key trong lịch sử git |

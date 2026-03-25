@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Card, Form, Input, DatePicker, Upload, Button, Avatar, Typography, message, Space, Spin, Switch, Select, Divider } from 'antd';
+import { Card, Form, Input, DatePicker, Upload, Button, Avatar, Typography, message, Space, Spin, Switch, Divider } from 'antd';
 import { UploadOutlined, SaveOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { profileService } from '../../services/profileService';
 import { notificationService } from '../../services/notificationService';
-import { useSettingsStore } from '../../stores/settingsStore';
 import type { User } from '../../types';
 
 const { Title, Text } = Typography;
@@ -17,7 +16,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const { user, logout } = useAuthStore();
-  const { setTheme, setLanguage } = useSettingsStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,8 +30,6 @@ export default function ProfilePage() {
         form.setFieldsValue({
           date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
           notifications: data.app_settings?.notifications ?? true,
-          theme: data.app_settings?.theme ?? 'light',
-          language: data.app_settings?.language ?? 'vi',
         });
       }
     } finally {
@@ -49,13 +45,11 @@ export default function ProfilePage() {
         date_of_birth: values.date_of_birth?.format('YYYY-MM-DD'),
         app_settings: {
           notifications: values.notifications,
-          theme: values.theme,
-          language: values.language,
+          theme: 'light',
+          language: 'vi',
         },
       });
       setProfile(updated);
-      setTheme(values.theme);
-      setLanguage(values.language);
       message.success('Đã cập nhật hồ sơ!');
     } catch (err) {
       message.error((err as Error).message || 'Cập nhật thất bại');
@@ -136,20 +130,6 @@ export default function ProfilePage() {
                   }
                 }}
               />
-            </Form.Item>
-
-            <Form.Item label="Giao diện" name="theme">
-              <Select>
-                <Select.Option value="light">🌤️ Sáng</Select.Option>
-                <Select.Option value="dark">🌙 Tối</Select.Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item label="Ngôn ngữ" name="language">
-              <Select>
-                <Select.Option value="vi">🇻🇳 Tiếng Việt</Select.Option>
-                <Select.Option value="en">🇬🇧 English</Select.Option>
-              </Select>
             </Form.Item>
 
             <Form.Item>

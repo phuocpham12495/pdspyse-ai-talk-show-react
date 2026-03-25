@@ -129,3 +129,31 @@ Thêm biến môi trường trên Vercel Dashboard: `VITE_SUPABASE_URL`, `VITE_S
 npm install -g netlify-cli
 netlify deploy --prod --dir=dist
 ```
+
+---
+
+## Lưu ý bảo mật — Giai đoạn 4 (2026-03-25)
+
+### File .env đã được xóa khỏi lịch sử git
+
+Trong Giai đoạn 4, file `.env` đã được phát hiện trong lịch sử git và đã xử lý:
+
+```bash
+# Đã chạy để xóa khỏi toàn bộ lịch sử
+git filter-branch --force --index-filter \
+  "git rm --cached --ignore-unmatch .env" \
+  --prune-empty --tag-name-filter cat -- --all
+```
+
+`.env` đã được thêm vào `.gitignore`. **Không bao giờ commit file `.env` lên repository.**
+
+> Nếu clone repository, bạn phải tạo file `.env` thủ công từ `.env.example`.
+
+### Luồng đăng ký — Xác nhận email
+
+Kể từ Giai đoạn 4, sau khi đăng ký thành công, app **không** tự động đăng nhập. Thay vào đó:
+1. Hiển thị thông báo: "Vui lòng kiểm tra email để xác nhận tài khoản"
+2. Redirect về `/login`
+3. User phải xác nhận email trước khi đăng nhập được
+
+> Đây là yêu cầu bắt buộc của Supabase Auth khi bật email confirmation.

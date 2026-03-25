@@ -29,7 +29,7 @@ function buildPrompt(body: RequestBody): string {
     .map(p => `- ${p.name}: Tone is ${p.personality_traits.tone}, style is ${p.personality_traits.style}`)
     .join('\n');
 
-  return `You are a talk show script generator. Generate a structured AI talk show episode.
+  return `You are a Vietnamese talk show script generator. Generate a structured AI talk show episode entirely in Vietnamese.
 
 Topic: ${body.topic}
 Tone: ${body.tone}
@@ -42,14 +42,14 @@ Each persona MUST stay in character throughout. The ${body.tone} tone must be ma
 
 Generate the output as a valid JSON object with this exact structure (no markdown, no code fences, just raw JSON):
 {
-  "intro": "An engaging opening introduction for the talk show episode about the topic",
+  "intro": "An engaging opening introduction in Vietnamese",
   "discussion": [
-    { "speaker": "PersonaName", "text": "What they say" }
+    { "speaker": "PersonaName", "text": "What they say in Vietnamese" }
   ],
   "highlights": [
-    "Key interesting moment or quote from the discussion"
+    "Key interesting moment or quote in Vietnamese"
   ],
-  "summary": "A closing summary wrapping up the main points discussed"
+  "summary": "A closing summary in Vietnamese"
 }
 
 Rules:
@@ -57,7 +57,7 @@ Rules:
 - discussion: Back-and-forth dialogue between ALL personas, each staying in their defined character
 - highlights: Notable quotes or moments from the discussion
 - summary: 2-3 sentences concluding the episode
-- All text must be in English
+- ALL content MUST be written in Vietnamese language
 - Make the conversation feel natural and entertaining`;
 }
 
@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
         generationConfig: {
           temperature: 0.9,
           topP: 0.95,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
           responseMimeType: 'application/json',
         },
       }),

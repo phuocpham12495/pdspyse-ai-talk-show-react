@@ -33,6 +33,7 @@ export const router = createBrowserRouter([
       { path: 'episodes/:id', element: <EpisodeDetail /> },
       { path: 'personas', element: <PersonaList /> },
       { path: 'personas/new', element: <PersonaBuilder /> },
+      { path: 'personas/:id/edit', element: <PersonaBuilder /> },
       { path: 'feed', element: <PublicFeed /> },
       { path: 'feed/:id', element: <EpisodeDetail /> },
       { path: 'profile', element: <ProfilePage /> },

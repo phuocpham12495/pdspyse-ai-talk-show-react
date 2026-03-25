@@ -13,6 +13,7 @@ interface EpisodeState {
   error: string | null;
   fetchEpisodes: () => Promise<void>;
   fetchEpisodeById: (id: string) => Promise<void>;
+  togglePublic: (id: string, is_public: boolean) => Promise<void>;
   deleteEpisode: (id: string) => Promise<void>;
   setFilterTags: (tags: string[]) => void;
   setFilterMood: (mood: Mood | null) => void;
@@ -47,6 +48,14 @@ export const useEpisodeStore = create<EpisodeState>()(persist((set, get) => ({
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
+  },
+
+  togglePublic: async (id, is_public) => {
+    const updated = await episodeService.togglePublic(id, is_public);
+    set((state) => ({
+      episodes: state.episodes.map((ep) => ep.id === id ? updated : ep),
+      currentEpisode: state.currentEpisode?.id === id ? updated : state.currentEpisode,
+    }));
   },
 
   deleteEpisode: async (id) => {

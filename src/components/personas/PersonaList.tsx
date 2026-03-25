@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { List, Card, Tag, Button, Modal, message, Typography, Space } from 'antd';
-import { PlusOutlined, DeleteOutlined, CrownOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, EditOutlined, CrownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { usePersonaStore } from '../../stores/personaStore';
 import type { Persona } from '../../types';
@@ -52,7 +52,10 @@ export default function PersonaList() {
               actions={
                 persona.is_default
                   ? undefined
-                  : [<Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDelete(persona)} key="delete">Xóa</Button>]
+                  : [
+                      <Button type="text" icon={<EditOutlined />} onClick={() => navigate(`/personas/${persona.id}/edit`)} key="edit">Sửa</Button>,
+                      <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDelete(persona)} key="delete">Xóa</Button>,
+                    ]
               }
             >
               <Card.Meta

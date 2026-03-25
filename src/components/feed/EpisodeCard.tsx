@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Tag, Typography, Space, Avatar, Button, message, Tooltip } from 'antd';
 import { HeartOutlined, HeartFilled, MessageOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useFeedStore } from '../../stores/feedStore';
+import { socialService } from '../../services/socialService';
 import type { Episode } from '../../types';
 
 const { Text, Paragraph } = Typography;
@@ -17,6 +18,10 @@ export default function EpisodeCard({ episode, onLikeToggled }: Props) {
   const { toggleLike } = useFeedStore();
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(episode.likes_count || 0);
+
+  useEffect(() => {
+    socialService.hasLiked(episode.id).then(setLiked).catch(() => {});
+  }, [episode.id]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();

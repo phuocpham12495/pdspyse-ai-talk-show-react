@@ -7,9 +7,13 @@ export const episodeService = {
     sortField: SortField = 'created_at',
     sortOrder: SortOrder = 'desc'
   ): Promise<Episode[]> {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('Not authenticated');
+
     let query = supabase
       .from('episodes')
       .select('*, episode_tags(tag_id, tags(id, name))')
+      .eq('user_id', userData.user.id)
       .order(sortField, { ascending: sortOrder === 'asc' });
 
     if (filters.mood) {
@@ -71,11 +75,22 @@ export const episodeService = {
 
     if (episode.tags.length > 0) {
       for (const tagName of episode.tags) {
-        const { data: tagData } = await supabase
+        // Try to find existing tag first
+        let { data: tagData } = await supabase
           .from('tags')
-          .upsert({ name: tagName }, { onConflict: 'name' })
-          .select()
+          .select('id')
+          .eq('name', tagName)
           .single();
+
+        // Create if not exists
+        if (!tagData) {
+          const { data: newTag } = await supabase
+            .from('tags')
+            .insert({ name: tagName })
+            .select('id')
+            .single();
+          tagData = newTag;
+        }
 
         if (tagData) {
           await supabase
@@ -88,6 +103,18 @@ export const episodeService = {
     return mapEpisode(data);
   },
 
+  async togglePublic(id: string, is_public: boolean): Promise<Episode> {
+    const { data, error } = await supabase
+      .from('episodes')
+      .update({ is_public })
+      .eq('id', id)
+      .select('*, episode_tags(tag_id, tags(id, name))')
+      .single();
+
+    if (error) throw error;
+    return mapEpisode(data);
+  },
+
   async deleteEpisode(id: string): Promise<void> {
     const { error } = await supabase.from('episodes').delete().eq('id', id);
     if (error) throw error;
@@ -96,12 +123,17 @@ export const episodeService = {
   async getPublicEpisodes(): Promise<Episode[]> {
     const { data, error } = await supabase
       .from('episodes')
-      .select('*, episode_tags(tag_id, tags(id, name)), users(id, email, avatar_url)')
+      .select('*, episode_tags(tag_id, tags(id, name)), users(id, email, avatar_url), likes(id), comments(id)')
       .eq('is_public', true)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(mapEpisode);
+    return (data || []).map((raw) => {
+      const ep = mapEpisode(raw);
+      ep.likes_count = raw.likes?.length || 0;
+      ep.comments_count = raw.comments?.length || 0;
+      return ep;
+    });
   },
 };
 

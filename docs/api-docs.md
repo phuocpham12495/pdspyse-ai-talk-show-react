@@ -78,6 +78,18 @@ interface GeneratedContent {
 ### POST — Tạo episode mới
 ### DELETE `?id=eq.{id}` — Xóa episode (chỉ của mình)
 
+### PATCH `?id=eq.{id}` — Cập nhật is_public (togglePublic) *(Giai đoạn 4)*
+```typescript
+// episodeService.togglePublic — chuyển đổi Công khai / Riêng tư
+const { error } = await supabase
+  .from('episodes')
+  .update({ is_public: !currentValue })
+  .eq('id', id);
+```
+**RLS:** Chỉ chủ sở hữu (`user_id = auth.uid()`) mới được PATCH
+
+> **Giai đoạn 4:** `getEpisodes` nay filter thêm `user_id = auth.uid()` để "Tập của tôi" chỉ hiển thị tập của chủ sở hữu.
+
 ---
 
 ## 3. Personas (`/rest/v1/personas`)
@@ -97,8 +109,10 @@ interface Persona {
 **Default Personas:** Comedian, Expert, Host, Moderator, Villain
 
 ### POST — Tạo persona tùy chỉnh
-### PATCH `?id=eq.{id}` — Cập nhật (không cho sửa default)
+### PATCH `?id=eq.{id}` — Cập nhật persona tùy chỉnh *(Giai đoạn 4: route `/personas/:id/edit`)*
 ### DELETE `?id=eq.{id}` — Xóa (không cho xóa default)
+
+> **Giai đoạn 4:** PersonaBuilder hỗ trợ cả create (`/personas/new`) lẫn edit (`/personas/:id/edit`). PersonaList hiển thị nút **Sửa/Xóa** chỉ với custom personas (`is_default = false`).
 
 ---
 
@@ -115,6 +129,8 @@ interface Persona {
 - **POST** — Like episode (UNIQUE constraint: 1 like/user/episode)
 - **DELETE** `?id=eq.{id}` — Bỏ like (chỉ like của mình)
 - **GET** `?episode_id=eq.{id}` — Đếm likes
+
+> **Giai đoạn 4:** `toggleLike` và `hasLiked` chuyển sang **array query** thay `.single()` để tránh exception khi 0 kết quả. `getPublicEpisodes` join bảng likes và comments để lấy count thực tế trong 1 query.
 
 ### Comments (`/rest/v1/comments`)
 - **GET** `?episode_id=eq.{id}&order=created_at.asc` — Lấy comments
@@ -147,7 +163,9 @@ interface GeneratedContent {
 
 **AI Model:** Google Gemini 2.5 Flash
 **API Key:** Lưu trong Supabase Vault (`GEMINI_API_KEY`)
-**Config:** `temperature: 0.9`, `topP: 0.95`, `maxOutputTokens: 4096`
+**Config:** `temperature: 0.9`, `topP: 0.95`, `maxOutputTokens: 8192` *(tăng từ 4096 trong Giai đoạn 4)*
+**verify_jwt:** `false` *(đổi từ `true` trong Giai đoạn 4 — fix lỗi 401)*
+**Ngôn ngữ output:** Tiếng Việt 100% *(prompt yêu cầu "ALL content MUST be written in Vietnamese language")*
 **Lỗi:** `400` thiếu topic/personas | `429` rate limit | `500` Gemini API lỗi
 
 ---

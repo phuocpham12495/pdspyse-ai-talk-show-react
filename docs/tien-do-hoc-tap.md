@@ -9,7 +9,7 @@
 {
   "project": "Pdspyse AI Talk Show",
   "date": "2026-03-25",
-  "overall_progress": 93,
+  "overall_progress": 97,
   "concepts": [
     {
       "name": "React + TypeScript",
@@ -43,9 +43,9 @@
     },
     {
       "name": "AI Integration (Gemini 2.5 Flash)",
-      "progress": 85,
-      "skills_practiced": ["Prompt engineering", "Structured JSON output", "Edge Function proxy", "API key security"],
-      "notes": "responseMimeType: 'application/json' cho structured output. Key trong Vault."
+      "progress": 95,
+      "skills_practiced": ["Prompt engineering", "Structured JSON output", "Edge Function proxy", "API key security", "Vietnamese-only prompt constraint", "maxOutputTokens tuning", "verify_jwt config"],
+      "notes": "Giai đoạn 4: prompt ràng buộc Vietnamese-only, maxOutputTokens 8192, fix 401 bằng verify_jwt:false."
     },
     {
       "name": "PWA",
@@ -55,9 +55,9 @@
     },
     {
       "name": "Social Features",
-      "progress": 85,
-      "skills_practiced": ["Like toggle", "Comment CRUD", "Share (clipboard)", "Real-time counts"],
-      "notes": "Interactive buttons trên card + detail. Clipboard API cho share."
+      "progress": 95,
+      "skills_practiced": ["Like toggle", "Comment CRUD", "Share (clipboard)", "Real-time counts", "Array query vs .single()", "JOIN for counts", "Public/private toggle"],
+      "notes": "Giai đoạn 4: fix .single() → array query, join likes/comments cho count thật, Public/Private Switch trong EpisodeDetail, like/share chỉ còn ở EpisodeCard."
     },
     {
       "name": "Offline/Online Detection",
@@ -100,7 +100,6 @@
     "Thêm Supabase Realtime cho live like/comment counts",
     "Deploy lên Vercel, kiểm tra Lighthouse score",
     "Viết E2E tests với Playwright cho auth + generator flow",
-    "Thêm dark mode toggle sử dụng app_settings.theme",
     "Thêm infinite scroll thay thế pagination cho feed"
   ]
 }
@@ -120,4 +119,6 @@
 | Social Features | 85% | ✅ Like/comment/share |
 | Online/Offline | 80% | ✅ Hook + UI indicator + localStorage cache |
 | Testing | 25% | ⚠️ Cần viết actual tests |
-| **Tổng** | **93%** | Giai đoạn 3 hoàn thành |
+| AI (Gemini) | 95% | ✅ Vietnamese-only prompt, maxOutputTokens 8192, fix 401 |
+| Social Features | 95% | ✅ Fix count joins, array query, public/private toggle |
+| **Tổng** | **97%** | Giai đoạn 4 hoàn thành |

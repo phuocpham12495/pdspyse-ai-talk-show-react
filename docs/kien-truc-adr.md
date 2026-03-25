@@ -91,3 +91,42 @@
   - ✅ Đơn giản, không cần thư viện thêm, tích hợp sẵn trong Zustand
   - ✅ `partialize` tránh lưu state không cần thiết (filters, loading, error)
   - ⚠️ localStorage giới hạn ~5MB, đủ cho text nhưng không cho media lớn
+
+## ADR-009: Chỉ hỗ trợ tiếng Việt (Vietnamese-only)
+
+- **Trạng thái:** Đã chấp nhận (Giai đoạn 4)
+- **Bối cảnh:** App ban đầu có `settingsStore` lưu `language` (vi/en) và locale `enUS` từ AntD
+- **Quyết định:** Xóa hoàn toàn dark theme, `enUS` locale, language selector trong ProfilePage. App chỉ dùng `vi_VN` locale và light theme.
+- **Đánh đổi:**
+  - ✅ Giảm complexity, bundle nhỏ hơn, không cần quản lý i18n
+  - ✅ Nội dung AI (Edge Function) nhất quán 100% tiếng Việt
+  - ⚠️ Không mở rộng cho người dùng quốc tế
+
+## ADR-010: Edge Function verify_jwt = false
+
+- **Trạng thái:** Đã chấp nhận (Giai đoạn 4)
+- **Bối cảnh:** Frontend gọi `supabase.functions.invoke()` nhưng Edge Function trả về 401 liên tục
+- **Nguyên nhân gốc:** `verify_jwt: true` (default) yêu cầu Bearer JWT hợp lệ, nhưng Supabase JS client không tự đính kèm JWT khi gọi Edge Function theo một số cấu hình
+- **Quyết định:** Đặt `verify_jwt: false` trong config Edge Function. Auth vẫn được kiểm tra qua RLS ở database layer.
+- **Đánh đổi:**
+  - ✅ Loại bỏ lỗi 401, function hoạt động ổn định
+  - ⚠️ Edge Function không validate JWT tại entry point → phụ thuộc RLS bảo vệ dữ liệu
+
+## ADR-011: RLS bảng users — đọc công khai
+
+- **Trạng thái:** Đã chấp nhận (Giai đoạn 4)
+- **Bối cảnh:** Policy cũ "chỉ đọc profile của mình" khiến tên/email người dùng khác hiển thị là "Ẩn danh" trong feed/comments
+- **Quyết định:** Đổi policy SELECT trên bảng `users` thành `USING (true)` — cho phép đọc công khai
+- **Đánh đổi:**
+  - ✅ Email/tên người dùng hiển thị đúng trong cộng đồng
+  - ⚠️ Email người dùng có thể bị lộ → cân nhắc ẩn email, chỉ hiện display_name trong tương lai
+
+## ADR-012: Pattern lưu tag — select-first-then-insert
+
+- **Trạng thái:** Đã chấp nhận (Giai đoạn 4)
+- **Bối cảnh:** `upsert` trên bảng `tags` thất bại im lặng do RLS không cho phép UPDATE của user khác
+- **Quyết định:** Thay bằng pattern: `SELECT` tag theo name → nếu chưa có thì `INSERT` mới
+- **Đánh đổi:**
+  - ✅ Không bao giờ cố UPDATE → không vi phạm RLS
+  - ✅ Tag tồn tại rồi sẽ được reuse đúng
+  - ⚠️ Thêm 1 query → latency tăng nhẹ khi lưu tags mới

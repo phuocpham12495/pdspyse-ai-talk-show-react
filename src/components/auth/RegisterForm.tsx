@@ -15,8 +15,8 @@ export default function RegisterForm() {
     setLoading(true);
     try {
       await register(values.email, values.password);
-      message.success('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.');
-      navigate('/');
+      message.success('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản trước khi đăng nhập.');
+      navigate('/login');
     } catch (err) {
       message.error((err as Error).message || 'Đăng ký thất bại');
     } finally {

@@ -75,6 +75,19 @@
 - [x] Kết nối notification Switch trong ProfilePage với `notificationService.requestPermission()` + `registerServiceWorker()`
 - [x] Thêm Zustand `persist` middleware vào `episodeStore` (localStorage cache cho US015)
 
+### Giai đoạn 4 — Bug Fixes & Feature Improvements ✅ (2026-03-25)
+- [x] Xóa dark theme & ngôn ngữ tiếng Anh (settingsStore, enUS locale, language/theme selects trong ProfilePage)
+- [x] Edge Function: output tiếng Việt 100%, maxOutputTokens 4096→8192, verify_jwt false (fix 401), version 2→5
+- [x] Thêm togglePublic vào episodeService/episodeStore; EpisodeDetail có Switch Công khai/Riêng tư
+- [x] Xóa like/share khỏi EpisodeDetail (chỉ giữ ở EpisodeCard trên community feed)
+- [x] Fix likes/comments count: getPublicEpisodes join bảng likes+comments; toggleLike/hasLiked dùng array query thay .single()
+- [x] Đổi RLS bảng users thành đọc công khai (fix "Ẩn danh")
+- [x] Đăng ký không auto-login; hiển thị thông báo xác nhận email + redirect /login
+- [x] getEpisodes filter theo user_id (fix "Tập của tôi" hiển thị đúng chủ sở hữu)
+- [x] PersonaBuilder hỗ trợ create + edit (/personas/:id/edit); PersonaList có Edit/Delete cho custom personas
+- [x] Sửa tag saving: upsert → select-first-then-insert (fix RLS silent fail)
+- [x] Xóa .env khỏi git history (filter-branch), thêm vào .gitignore
+
 ### Sprint 6 (Tương lai) ⏳
 - [ ] Code-splitting (React.lazy)
 - [ ] Supabase Realtime cho live likes/comments
@@ -109,3 +122,8 @@ PWA Layer (independent):
 | vite-plugin-pwa lỗi | Thấp | ✅ Đã xử lý | Manual Service Worker |
 | Edge Function cold start | Trung bình | ✅ Đã xử lý | Loading spinner UX |
 | Offline data stale | Thấp | ✅ Đã xử lý | SW cache + online status |
+| .env trong git history | Cao | ✅ Đã xử lý (G4) | filter-branch + .gitignore |
+| 401 Edge Function | Cao | ✅ Đã xử lý (G4) | verify_jwt: false |
+| Nội dung AI không tiếng Việt | Trung bình | ✅ Đã xử lý (G4) | Prompt ràng buộc Vietnamese-only |
+| "Ẩn danh" trong feed/comments | Trung bình | ✅ Đã xử lý (G4) | RLS users public read |
+| Tag upsert fail im lặng | Trung bình | ✅ Đã xử lý (G4) | select-first-then-insert pattern |

@@ -203,6 +203,118 @@ describe('ProfilePage — notification switch', () => {
 
 ---
 
+## Test Cases bổ sung — Giai đoạn 4 (2026-03-25)
+
+### TC-G4-001: Public/Private Toggle
+
+```typescript
+describe('EpisodeDetail — togglePublic', () => {
+  it('Switch hiển thị đúng trạng thái is_public ban đầu', () => {
+    // Render EpisodeDetail với episode.is_public = false
+    const switchEl = screen.getByRole('switch', { name: /công khai/i });
+    expect(switchEl).not.toBeChecked();
+  });
+
+  it('bật Switch gọi episodeStore.togglePublic(id)', async () => {
+    const spy = vi.spyOn(useEpisodeStore.getState(), 'togglePublic');
+    await userEvent.click(screen.getByRole('switch', { name: /công khai/i }));
+    expect(spy).toHaveBeenCalledWith(episode.id);
+  });
+
+  it('sau toggle, label đổi thành "Công khai"', async () => {
+    await userEvent.click(screen.getByRole('switch', { name: /riêng tư/i }));
+    expect(screen.getByText(/công khai/i)).toBeInTheDocument();
+  });
+});
+```
+
+### TC-G4-002: Registration Flow — Email Confirmation
+
+```typescript
+describe('RegisterForm — luồng đăng ký mới', () => {
+  it('đăng ký thành công KHÔNG tự đăng nhập', async () => {
+    // Mock authService.register thành công
+    await userEvent.click(screen.getByRole('button', { name: /đăng ký/i }));
+    expect(useAuthStore.getState().user).toBeNull(); // chưa đăng nhập
+  });
+
+  it('hiển thị thông báo xác nhận email sau đăng ký', async () => {
+    await userEvent.click(screen.getByRole('button', { name: /đăng ký/i }));
+    expect(screen.getByText(/kiểm tra email/i)).toBeInTheDocument();
+  });
+
+  it('redirect về /login sau đăng ký thành công', async () => {
+    await userEvent.click(screen.getByRole('button', { name: /đăng ký/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+  });
+});
+```
+
+### TC-G4-003: Persona CRUD — Edit Mode
+
+```typescript
+describe('PersonaBuilder — chế độ chỉnh sửa', () => {
+  it('truy cập /personas/:id/edit load dữ liệu persona vào form', async () => {
+    renderWithRouter('/personas/custom-123/edit');
+    expect(await screen.findByDisplayValue('Tên persona cũ')).toBeInTheDocument();
+  });
+
+  it('submit form ở edit mode gọi personaStore.updatePersona()', async () => {
+    const spy = vi.spyOn(usePersonaStore.getState(), 'updatePersona');
+    await userEvent.click(screen.getByRole('button', { name: /lưu/i }));
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('PersonaList chỉ hiện nút Edit/Delete cho custom personas', () => {
+    render(<PersonaList />);
+    const defaultCard = screen.getByText('Comedian').closest('.ant-card');
+    expect(within(defaultCard!).queryByRole('button', { name: /xóa/i })).toBeNull();
+  });
+
+  it('default personas không có nút Edit', () => {
+    const defaultCard = screen.getByText('Expert').closest('.ant-card');
+    expect(within(defaultCard!).queryByRole('button', { name: /sửa/i })).toBeNull();
+  });
+});
+```
+
+### TC-G4-004: Tag Saving — select-first-then-insert
+
+```typescript
+describe('Tag saving pattern', () => {
+  it('tag đã tồn tại được reuse, không INSERT mới', async () => {
+    const insertSpy = vi.spyOn(supabase, 'from');
+    // Mock SELECT trả về tag đã có
+    await episodeService.saveEpisodeTags(episodeId, ['AI']);
+    // Không gọi INSERT nếu tag đã tồn tại
+    expect(insertSpy).not.toHaveBeenCalledWith(expect.objectContaining({ action: 'INSERT' }));
+  });
+
+  it('tag mới được INSERT sau khi SELECT không trả về kết quả', async () => {
+    // Mock SELECT trả về rỗng
+    await episodeService.saveEpisodeTags(episodeId, ['TagMới']);
+    // Phải gọi INSERT
+    expect(/* insert spy */).toHaveBeenCalled();
+  });
+});
+```
+
+### Ma trận cập nhật — Giai đoạn 4
+
+| TC ID | Tính năng | Mô tả | Ưu tiên | Trạng thái |
+|-------|-----------|-------|---------|-----------|
+| TC-G4-001a | Public/Private Toggle | Switch hiển thị đúng trạng thái | P1 | Sẵn sàng test |
+| TC-G4-001b | Public/Private Toggle | Toggle gọi episodeStore.togglePublic | P1 | Sẵn sàng test |
+| TC-G4-002a | Registration Flow | Không auto-login sau đăng ký | P0 | Sẵn sàng test |
+| TC-G4-002b | Registration Flow | Hiện thông báo xác nhận email | P0 | Sẵn sàng test |
+| TC-G4-002c | Registration Flow | Redirect /login | P0 | Sẵn sàng test |
+| TC-G4-003a | Persona Edit | Load dữ liệu vào form ở edit mode | P1 | Sẵn sàng test |
+| TC-G4-003b | Persona Edit | Default personas không có Edit/Delete | P1 | Sẵn sàng test |
+| TC-G4-004a | Tag Saving | Reuse tag đã tồn tại | P1 | Sẵn sàng test |
+| TC-G4-004b | Tag Saving | INSERT tag mới khi chưa có | P1 | Sẵn sàng test |
+
+---
+
 ## CI/CD Pipeline
 
 ```yaml

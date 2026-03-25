@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Form, Input, Select, Button, Card, Typography, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Form, Input, Select, Button, Card, Typography, message, Spin } from 'antd';
+import { PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { useNavigate, useParams } from 'react-router-dom';
 import { usePersonaStore } from '../../stores/personaStore';
 
 const { Title } = Typography;
@@ -11,21 +11,56 @@ const TRAIT_OPTIONS = ['funny', 'toxic', 'genius', 'chaotic', 'calm', 'sarcastic
 
 export default function PersonaBuilder() {
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(false);
   const [form] = Form.useForm();
-  const { createPersona } = usePersonaStore();
+  const { createPersona, updatePersona, personas, fetchPersonas } = usePersonaStore();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
 
-  const handleCreate = async () => {
+  const isEdit = !!id;
+
+  useEffect(() => {
+    if (isEdit) {
+      setInitialLoading(true);
+      const load = async () => {
+        if (personas.length === 0) await fetchPersonas();
+        setInitialLoading(false);
+      };
+      load();
+    }
+  }, [isEdit, personas.length, fetchPersonas]);
+
+  useEffect(() => {
+    if (isEdit && personas.length > 0) {
+      const persona = personas.find((p) => p.id === id);
+      if (persona) {
+        form.setFieldsValue({
+          name: persona.name,
+          keywords: persona.personality_traits.keywords || [],
+          description: persona.personality_traits.description || '',
+        });
+      }
+    }
+  }, [isEdit, id, personas, form]);
+
+  const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      await createPersona(values.name, {
+      const traits = {
         tone: values.keywords?.[0] || 'neutral',
         style: values.keywords?.join(', ') || '',
         description: values.description || '',
         keywords: values.keywords || [],
-      });
-      message.success(`Persona "${values.name}" đã được tạo!`);
+      };
+
+      if (isEdit) {
+        await updatePersona(id, values.name, traits);
+        message.success(`Persona "${values.name}" đã được cập nhật!`);
+      } else {
+        await createPersona(values.name, traits);
+        message.success(`Persona "${values.name}" đã được tạo!`);
+      }
       form.resetFields();
       navigate('/personas');
     } catch (err) {
@@ -37,9 +72,13 @@ export default function PersonaBuilder() {
     }
   };
 
+  if (initialLoading) {
+    return <div style={{ textAlign: 'center', padding: 48 }}><Spin size="large" /></div>;
+  }
+
   return (
     <div>
-      <Title level={3}>✨ Tạo Persona mới</Title>
+      <Title level={3}>{isEdit ? '✏️ Sửa Persona' : '✨ Tạo Persona mới'}</Title>
       <Card style={{ maxWidth: 600 }}>
         <Form form={form} layout="vertical">
           <Form.Item
@@ -62,8 +101,14 @@ export default function PersonaBuilder() {
             <TextArea rows={4} placeholder="Mô tả persona của bạn (tùy chọn)" />
           </Form.Item>
 
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate} loading={loading} size="large">
-            Tạo Persona
+          <Button
+            type="primary"
+            icon={isEdit ? <SaveOutlined /> : <PlusOutlined />}
+            onClick={handleSubmit}
+            loading={loading}
+            size="large"
+          >
+            {isEdit ? 'Lưu thay đổi' : 'Tạo Persona'}
           </Button>
         </Form>
       </Card>

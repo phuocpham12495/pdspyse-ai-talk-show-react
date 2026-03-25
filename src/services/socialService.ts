@@ -6,12 +6,13 @@ export const socialService = {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('Not authenticated');
 
-    const { data: existing } = await supabase
+    const { data: rows } = await supabase
       .from('likes')
       .select('id')
       .eq('episode_id', episodeId)
-      .eq('user_id', userData.user.id)
-      .single();
+      .eq('user_id', userData.user.id);
+
+    const existing = rows?.[0] || null;
 
     if (existing) {
       await supabase.from('likes').delete().eq('id', existing.id);
@@ -38,14 +39,13 @@ export const socialService = {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return false;
 
-    const { data } = await supabase
+    const { data: rows } = await supabase
       .from('likes')
       .select('id')
       .eq('episode_id', episodeId)
-      .eq('user_id', userData.user.id)
-      .single();
+      .eq('user_id', userData.user.id);
 
-    return !!data;
+    return (rows?.length || 0) > 0;
   },
 
   async getComments(episodeId: string): Promise<Comment[]> {
